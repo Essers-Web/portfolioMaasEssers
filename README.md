@@ -7,4 +7,4 @@ Install dependencies npm install or yarn install or pnpm install
 
 Start the development server npm run dev and open the given link in your terminal
 
-(Some projects require components to be placed in App.vue to ensure the correct components run, so change that if necessary.)
+(Some projects require components to be placed in App.vue to ensure the correct components run, so change that if necessary)
