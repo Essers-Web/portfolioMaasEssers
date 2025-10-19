@@ -10,11 +10,11 @@
 </template>
 
 <script setup>
-// geen script nodig voor deze demo
+
 </script>
 
 <style scoped>
-/* Container (houdt Loader mooi in het midden van de pagina/sectie) */
+
 .container {
   width: 40vw;
   height: 50vw;
@@ -23,30 +23,28 @@
   align-items: center;
 }
 
-/* Wrapper: relatieve box, gebruikt vw zodat alles schaalt met viewport-breedte */
+
 .loader-wrapper {
   position: relative;
-  width: 24vw;   /* totale grootte van de grootste ring */
+  width: 24vw;   
   height: 24vw;
-  min-width: 14vw;  /* optioneel: voorkom dat het té klein wordt op kleine schermen */
+  min-width: 14vw;  
   min-height: 14vw;
 }
 
-/* Basisring: gecentreerd via top/left + translate, en rotate animatie behoudt translate */
+
 .loader-ring {
   position: absolute;
   top: 50%;
   left: 50%;
-  /* translate zorgt voor perfecte centrering; rotate wordt toegevoegd in animatie */
   transform: translate(-50%, -50%) rotate(0deg);
   border-radius: 50%;
-  border: 1.6vw solid transparent; /* randdikte schaalbaar met vw */
+  border: 1.6vw solid transparent;
   border-top-color: #ff3cac;
   animation: spin 1.2s linear infinite;
   box-sizing: border-box;
 }
 
-/* Groottes van de ringen (in vw) */
 .ring-large {
   width: 24vw;
   height: 24vw;
@@ -69,14 +67,12 @@
   z-index: 3;
 }
 
-/* Animatie: behoud translate en roteer */
 @keyframes spin {
   to {
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 
-/* Tekst exact in het midden, boven de ringen */
 .loader-text {
   position: absolute;
   top: 50%;
@@ -91,10 +87,9 @@
   font-weight: 600;
 }
 
-/* Optioneel: op zeer smalle schermen iets beperkingen toepassen */
 @media (max-width: 420px) {
-  .loader-wrapper { width: 36vw; height: 36vw; } /* relatief groter op heel smalle viewports */
-  .loader-ring { border: 2.4vw solid transparent; } /* verdikking op mobiel */
+  .loader-wrapper { width: 36vw; height: 36vw; }
+  .loader-ring { border: 2.4vw solid transparent; }
   .loader-text { font-size: 3.5vw; }
 }
 </style>

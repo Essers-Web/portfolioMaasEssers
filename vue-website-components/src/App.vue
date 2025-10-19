@@ -7,8 +7,19 @@ import logIn from "@/components/LogIn.vue";
 
 <template>
   <div id="app">
-    <PictureScroller/><!--put component here from components    example:<Loader/> -->
+    <PictureScroller/>
+  </div>  
+  <div id="app">
+    <MenuSlider/>
+  </div>  
+  <div id="app">
+    <Loader/>
   </div>
+  <div id="app">
+    <logIn/>
+  </div>
+    <!--put component here from components    example:<Loader/> -->
+  
 </template>
 
 <style scoped>
@@ -19,7 +30,7 @@ import logIn from "@/components/LogIn.vue";
   margin: 0;
   padding: 0;
   height: 100vh;
-  width: 100%;
+  width: 100vw;
   background-color: #181818;
   font-family: sans-serif;
 }

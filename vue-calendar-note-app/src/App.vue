@@ -2,7 +2,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <div id="app">
     <div class="container-view">
-      <!-- Hier worden de componenten weergegeven op basis van de geselecteerde route -->
       <router-view></router-view>
     </div>
     <!--note nav-->
