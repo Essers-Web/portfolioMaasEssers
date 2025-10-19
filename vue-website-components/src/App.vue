@@ -18,7 +18,6 @@ import logIn from "@/components/LogIn.vue";
   <div id="app">
     <logIn/>
   </div>
-    <!--put component here from components    example:<Loader/> -->
   
 </template>
 
