@@ -11,7 +11,6 @@ export async function saveMaps() {
 }
 
 export async function loadMaps() {
-    console.log('Loaded Maps');
     const idMapData = await localforage.getItem('activityIdMap');
     const countMapData = await localforage.getItem('activityCountMap');
     if (Array.isArray(idMapData)) {
@@ -39,6 +38,9 @@ export async function loadActivityData() {
     return activityData;
 }
 
+export function getActivityData() {
+    return activityData;
+}
 
 export async function deleteActivityId(idToDelete) {
     let foundKey = null;

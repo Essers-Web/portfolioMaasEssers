@@ -29,9 +29,7 @@ const noteManager = {
 
             const blob = new Blob([JSON.stringify(existing)], { type: 'application/json' })
             await localforage.setItem(KEY, blob)
-            console.log('Fiction opgeslagen (upsert):', fiction)
         } catch (err) {
-            console.error('safeDataNote error', err)
         }
     },
 

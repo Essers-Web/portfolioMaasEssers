@@ -12,6 +12,7 @@
     </div>
     <div class="Calendar-activities">
       <CalendarActivitiesComponent
+          :key="componentKey"
           :selectedDate="selectedDate"
           :allActivities="allActivities"
           @get-activity="handleGetActivity"
@@ -19,6 +20,7 @@
     </div>
     <div class="Calendar-activities-settings">
       <SettingActivity
+          :key="componentKey"
           :title="activity.title"
           :ID="activity.ID"
           :allActivities="allActivities"
@@ -32,12 +34,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import {ref, onMounted, watch, computed} from 'vue'
 import CalendarComponent from '../components/calendarComponent.vue'
 import CalendarActivitiesComponent from '../components/calendarActivitiesComponent.vue'
 import SettingActivity from '../components/settingActivity.vue'
-import { getOrCreateId, loadActivityData, saveActivityData } from '../idManager.js'
+import { getOrCreateId, loadActivityData, saveActivityData, getActivityData  } from '../idManager.js'
+import {useRoute} from 'vue-router'
 
+const route = useRoute()
+const selectedMode = computed(() => route.query.mode === 'selected')
+const selectedNoteId = ref(route.query.id ?? null)
+const selectedActivityId = ref(route.query.activityId ?? null)
 const calendarRef    = ref(null)
 const selectedDate  = ref(null)
 const allActivities = ref({})
@@ -46,6 +53,43 @@ const activity      = ref({ title: '', ID: '' })
 onMounted(async () => {
   allActivities.value = await loadActivityData()
 })
+
+watch(
+    () => [selectedActivityId.value, selectedNoteId.value],
+    async ([activityId, noteId]) => {
+      if (!activityId || !noteId) return;
+
+      await loadActivityData();
+      const data = getActivityData();
+
+      let found = false;
+      for (const dateKey in data) {
+        const activities = data[dateKey];
+        for (const act of activities) {
+          if (act.ID === activityId) {
+            act.notes = [noteId];
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+
+      if (!found) {
+        console.warn('Geen activity gevonden voor ID:', activityId);
+        return;
+      }
+
+      await saveActivityData(data);
+    },
+    { immediate: true }
+);
+
+const componentKey = ref(0);
+
+function reloadActivityComponent() {
+  componentKey.value += 1;
+}
 
 async function updateActivities(newData) {
   allActivities.value = JSON.parse(JSON.stringify(newData))
@@ -104,6 +148,7 @@ async function handleTitleChanged(newTitle, ID) {
     activity.value.title = newTitle
   }
   await saveActivityData(allActivities.value)
+  reloadActivityComponent();
 }
 </script>
 
@@ -128,7 +173,7 @@ async function handleTitleChanged(newTitle, ID) {
 .Calendar-activities,
 .Calendar-activities-settings {
   display: flex;
-  height: 40vw;
+  height: 43vw;
   width: 90vw;
   margin: 3vw;
   background-color: #242424;

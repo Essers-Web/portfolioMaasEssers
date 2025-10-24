@@ -1,7 +1,7 @@
 <template>
 <div class="container">
   <ul class="note-block">
-    <li class="note" @click="openNote(note)" v-for="note in filteredNotes" :key="note.id">
+    <li class="note" @click="handleNote(note)" v-for="note in filteredNotes" :key="note.id">
       {{ note.title }}
     </li>
   </ul>
@@ -14,7 +14,8 @@ import noteManager from '../noteManager.js'
 
 const props = defineProps({
   addNote: Boolean,
-  searchQuery: String
+  searchQuery: String,
+  sellectMode: Boolean
 })
 
 const notes = ref([])
@@ -32,11 +33,16 @@ const loadNotes = async () => {
   notes.value = await noteManager.getDataNote()
 }
 
-const emit = defineEmits(['update:addNote', 'select-id'])
+const emit = defineEmits(['update:addNote', 'select-id', 'note'])
 
-function openNote(noteItem) {
-  emit("update:addNote", true)
-  emit("select-id", noteItem.id)
+function handleNote(noteItem) {
+  if(props.sellectMode){
+    emit("select-id", noteItem.id)
+  }
+  else{
+    emit("update:addNote", true)
+    emit("select-id", noteItem.id)
+  }
 }
 
 onMounted(() => {

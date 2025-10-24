@@ -4,8 +4,8 @@
   </div>
     <div v-else class="container">
     <input v-model="searchQuery" type="search" class="search-bar" placeholder="Search note..." />
-    <noteBlock @select-id="handleSelectedId" @update:add-note="addNote = $event" :search-query="searchQuery" />
-    <button class="add-note" @click="addNoteActive">add note+</button>
+    <noteBlock @select-id="handleSelectedId" @update:add-note="addNote = $event" :search-query="searchQuery" :sellectMode="$route.query.mode === 'select'"/>
+    <button v-if="!selectMode" class="add-note" @click="addNoteActive">add note+</button>
   </div>
 </template>
 
@@ -13,12 +13,26 @@
 import noteBlock from "../components/noteBlock.vue";
 import noteAddBlock from "../components/noteAddBlock.vue";
 import noteManager from '../noteManager.js'
-import {ref,watch} from "vue";
+import {computed, ref, watch,} from "vue";
+import {useRoute, useRouter} from 'vue-router'
 
+const route = useRoute()
+const router = useRouter()
+const selectMode = ref(route.query.mode)
+const searchNote = ref(route.query.search || '');
 const addNote = ref(false)
 const selectedId = ref(null)
 const notes = ref([])
-const searchQuery = ref("")
+const searchQuery = computed({
+  get: () => searchNote.value,
+  set: (val) => {
+    searchNote.value = val;
+  }
+});
+
+watch(() => route.query.mode, (newMode) => {
+  selectMode.value = newMode
+})
 
 function addNoteActive() {
     addNote.value = true
@@ -26,7 +40,21 @@ function addNoteActive() {
 
 function handleSelectedId(id) {
   selectedId.value = id;
-  addNote.value = true
+  const activityId = route.query.activity ?? route.query.activityId ?? route.query.idActivity ?? null;
+
+  if (selectMode.value === 'select') {
+    router.push({
+      name: 'Calendar',
+      query: {
+        mode: 'selected',
+        id: id,
+        activityId: activityId
+      }
+    });
+    selectMode.value = null;
+  } else {
+    addNote.value = true;
+  }
 }
 
 const loadNotes = async () => {
@@ -41,6 +69,11 @@ watch(addNote, (newVal) => {
 </script>
 
 <style scoped>
+.select-text {
+  justify-self: center;
+  align-self: center;
+}
+
 .container {
   display: flex;
   flex-direction: column;

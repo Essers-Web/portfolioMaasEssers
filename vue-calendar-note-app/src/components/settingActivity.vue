@@ -2,10 +2,10 @@
   <div class="container" v-if="isFilled(currentTitle) && isFilled(ID)">
     <div class="row-container">
       <button class="delete-button" @click="deleteActivity"> delete </button>
-      <button class="add-note-button" @click="goToNote">add note</button>
+      <button class="add-note-button" @click="goToNote">{{buttonText}}</button>
     </div>
     <button @click="changeTitle" class="button-title">{{ currentTitle }}</button>
-    <p>{{ ID }}</p>
+    <button class="search-note-button" @click="searchNote">Note: {{ currentNoteTitle }}</button>
   </div>
   <div class="container" v-else>
     <p class="replace-text">Select an activity</p>
@@ -13,9 +13,45 @@
 </template>
 
 <script setup>
-import { ref, watch} from 'vue'
-import {deleteActivityId, saveActivityData, loadActivityData, loadMaps} from "../idManager.js"
-import router from "../router/index.js";
+import { ref, watch, computed} from 'vue'
+import {deleteActivityId, saveActivityData, loadActivityData, loadMaps, getActivityData} from "../idManager.js"
+import { useRouter } from 'vue-router'
+import noteManager from '../noteManager.js';
+
+const router = useRouter()
+const props = defineProps({
+  title: String,
+  ID: String,
+  selectedDate: Date,
+  allActivities: {
+    type: Object,
+    default: () => ({}),
+  },
+})
+const emit = defineEmits(['titleChanged', 'databaseRefreshed'])
+const currentTitle = ref(props.title || '')
+const currentNoteId = ref(null)
+const currentNoteTitle = ref('')
+const buttonText = computed(() => {
+  return currentNoteId.value || currentNoteTitle.value ? 'Change note' : 'Add note';
+});
+
+watch(
+    () => [props.ID, props.title],
+    () => {
+      currentNoteId.value = null;
+      currentNoteTitle.value = '';
+    }
+);
+
+function searchNote() {
+  router.push({
+    name: 'Note',
+    query: {
+      search: currentNoteTitle.value || ''
+    }
+  });
+}
 
 function formatLocalDate(date) {
   const year = date.getFullYear();
@@ -28,24 +64,18 @@ function formatLocalDate(date) {
   return `${year}-${month}-${day}`;
 }
 
-const props = defineProps({
-  title: String,
-  ID: String,
-  selectedDate: Date,
-  allActivities: {
-    type: Object,
-    default: () => ({}),
-  },
-})
-const emit = defineEmits(['titleChanged', 'databaseRefreshed'])
-const currentTitle = ref(props.title || '')
-
 watch(() => props.title, newTitle => {
   currentTitle.value = newTitle || ''
 })
 
 function goToNote() {
-  router.push('/note')
+  router.push({
+    name: 'Note',
+    query: {
+      mode: 'select',
+      activity: props.ID
+    }
+  });
 }
 
 function isFilled(str) {
@@ -61,6 +91,8 @@ async function changeTitle() {
 
   emit('titleChanged', currentTitle.value, props.ID)
 }
+
+
 
 async function deleteActivity() {
   function sleep(ms) {
@@ -94,11 +126,58 @@ async function deleteActivity() {
   emit('titleChanged', null, props.ID);
 }
 
+async function getNoteFromActivity() {
+  await loadActivityData();
+  const data = getActivityData();
 
+  let noteId = null;
 
+  outer: for (const dateKey in data) {
+    const activities = data[dateKey];
+    for (const act of activities) {
+      if (act.ID === props.ID) {
+        if (act.notes && act.notes.length > 0) {
+          noteId = act.notes[0];
+        }
+        break outer;
+      }
+    }
+  }
 
+  console.log('Gevonden note-ID uit storage:', noteId);
+  return noteId;
+}
 
+async function getNoteData() {
+  if (!currentNoteId.value) return null;
 
+  try {
+    const allNotes = await noteManager.getDataNote();
+    const note = allNotes.find(n => n.id === currentNoteId.value);
+
+    if (!note) return null;
+
+    currentNoteTitle.value = note.title;
+    return note;
+  } catch (err) {
+    console.error('getNoteData error', err);
+    return null;
+  }
+}
+
+watch(
+    () => props.ID,
+    async (newId) => {
+      if (!newId) return;
+
+      currentNoteId.value = await getNoteFromActivity();
+
+      if (currentNoteId.value) {
+        await getNoteData();
+      }
+    },
+    { immediate: true }
+);
 
 </script>
 
@@ -144,7 +223,7 @@ p {
 
 .delete-button {
   display: flex;
-  width: 25vw;
+  width: 30vw;
   font-size: 4vw;
   border-radius: 9vw;
   padding: 2vw;
@@ -157,7 +236,21 @@ p {
 
 .add-note-button {
   display: flex;
-  width: 25vw;
+  width: 30vw;
+  font-size: 4vw;
+  border-radius: 9vw;
+  padding: 2vw;
+  align-content: center;
+  justify-content: center;
+  background-color: #242424;
+  border: 1vw solid #D34A00;
+  color: white;
+}
+
+.search-note-button {
+  display: flex;
+  width: auto;
+  max-width: 90vw;
   font-size: 4vw;
   border-radius: 9vw;
   padding: 2vw;

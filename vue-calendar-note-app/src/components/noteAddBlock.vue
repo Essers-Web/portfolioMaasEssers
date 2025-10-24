@@ -5,7 +5,6 @@
     <button class="safe-button" @click="saveDataNote">save</button>
     <button class="delete-button" @click="deleteDataNote">delete</button>
   </div>
-
 </template>
 
 <script setup>
@@ -60,8 +59,25 @@ const loadNoteById = async (id) => {
   }
 }
 
-const deleteDataNote = async (id) => {
+const deleteDataNote = async () => {
+  try {
+    if (!props.selectedId) {
+      emit('update:add-note', false)
+      return
+    }
 
+    await noteManager.deleteNoteById(props.selectedId)
+
+    title.value = ""
+    note.value = ""
+
+    emit('update:add-note', false)
+    emit('update:selected-id', null)
+
+    console.log(`Note ${props.selectedId} verwijderd`)
+  } catch (err) {
+    console.error("deleteDataNote error", err)
+  }
 }
 
 watch(
@@ -117,6 +133,7 @@ watch(
   display: flex;
   flex-direction: row;
   padding: 4vw;
+  gap: 1vw;
 }
 
 .safe-button {
@@ -136,7 +153,7 @@ watch(
   display: flex;
   width: 15vw;
   height: 15vw;
-  font-size: 6vw;
+  font-size: 5vw;
   border-radius: 9vw;
   background-color: #D34A00;
   border: 1vw solid #D34A00;
